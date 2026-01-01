@@ -251,26 +251,41 @@
 
 
         <script>
-async function postMessage() {
-    const text = document.querySelector("textarea").value.trim();
-    if (!text) return;
+            async function postMessage() {
+                const text = document.querySelector("textarea").value.trim();
+                if (!text) return;
 
-    const { error } = await supabaseClient
-        .from("posts")
-        .insert({
-            thread_id: "552b51ab-4933-46fb-abc4-bcf8fa316ce2",
-            content: text
-        });
+                const { error } = await supabaseClient
+                    .from("posts")
+                    .insert({
+                        thread_id: "552b51ab-4933-46fb-abc4-bcf8fa316ce2",
+                        content: text
+                    });
 
-    if (!error) {
-        location.reload();
-    } else {
-        alert("Post failed");
-    }
-}
+                if (!error) {
+                    location.reload();
+                } else {
+                    alert("Post failed");
+                }
+            }
 
-setInterval(loadPosts, 3000); // every 3 seconds
+            setInterval(loadPosts, 3000); // every 3 seconds
 
+
+            supabaseClient
+                .channel("posts-channel")
+                .on(
+                    "postgres_changes",
+                    {
+                        event: "INSERT",
+                        schema: "public",
+                        table: "posts"
+                    },
+                    payload => {
+                        loadPosts();
+                    }
+                )
+                .subscribe();
 
 
 
@@ -338,15 +353,6 @@ setInterval(loadPosts, 3000); // every 3 seconds
                 window.location.href = `index.html?thread=${threadId}`;
             }
         </script>
-
-
-
-
-
-
-
-
-
 
         <script>
             loadPosts();
