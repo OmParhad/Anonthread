@@ -89,7 +89,7 @@
 
         .highlight {
             background: rgba(0, 255, 156, 0.08);
-            transition:  background 1s;
+            transition: background 1s;
         }
 
         .ai-summary {
@@ -202,7 +202,7 @@
                 Humans won’t lose jobs to AI. They’ll lose curiosity first.
             </div>
 
-           
+
         </div>
 
         <div class="reply-box">
@@ -251,23 +251,31 @@
 
 
         <script>
-            async function postMessage() {
-                const text = document.querySelector("textarea").value.trim();
-                if (!text) return;
+async function postMessage() {
+    const text = document.querySelector("textarea").value.trim();
+    if (!text) return;
 
-                const { error } = await supabaseClient
-                    .from("posts")
-                    .insert({
-                        thread_id: "552b51ab-4933-46fb-abc4-bcf8fa316ce2",
-                        content: text
-                    });
+    const { error } = await supabaseClient
+        .from("posts")
+        .insert({
+            thread_id: "552b51ab-4933-46fb-abc4-bcf8fa316ce2",
+            content: text
+        });
 
-                if (!error) {
-                    location.reload();
-                } else {
-                    alert("Post failed");
-                }
-            }
+    if (!error) {
+        location.reload();
+    } else {
+        alert("Post failed");
+    }
+}
+
+setInterval(loadPosts, 3000); // every 3 seconds
+
+
+
+
+
+
         </script>
 
         <script>
@@ -309,27 +317,27 @@
             }
         </script>
 
-<script>
-async function createThread() {
-  const { data, error } = await supabaseClient
-    .from("threads")
-    .insert({ title: "Anonymous Thread" })
-    .select()
-    .single();
+        <script>
+            async function createThread() {
+                const { data, error } = await supabaseClient
+                    .from("threads")
+                    .insert({ title: "Anonymous Thread" })
+                    .select()
+                    .single();
 
-  if (error) {
-    console.error(error);
-    alert("Thread creation failed");
-    return;
-  }
+                if (error) {
+                    console.error(error);
+                    alert("Thread creation failed");
+                    return;
+                }
 
-  // THIS is your auto-generated UUID
-  const threadId = data.id;
+                // THIS is your auto-generated UUID
+                const threadId = data.id;
 
-  // redirect to thread page
-  window.location.href = `index.html?thread=${threadId}`;
-}
-</script>
+                // redirect to thread page
+                window.location.href = `index.html?thread=${threadId}`;
+            }
+        </script>
 
 
 
