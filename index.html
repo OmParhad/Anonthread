@@ -184,7 +184,25 @@
 
         <div class="thread">
             <h3>Is AI replacing thinking or exposing it?</h3>
-            <!-- Posts will be loaded here -->
+
+            <div class="post" id="p1">
+                <div class="meta">#1 Anonymous · 01:12 AM</div>
+                AI didn’t make people lazy. It revealed how many never liked thinking.
+            </div>
+
+            <div class="post" id="p2">
+                <div class="meta">#2 Anonymous · 01:19 AM</div>
+                <span class="ref" onclick="jump('p1')">>>1</span>
+                Tools amplify intent. Most intent is comfort.
+            </div>
+
+            <div class="post" id="p3">
+                <div class="meta">#3 Anonymous · 01:27 AM</div>
+                <span class="ref" onclick="jump('p2')">>>2</span>
+                Humans won’t lose jobs to AI. They’ll lose curiosity first.
+            </div>
+
+
         </div>
 
         <div class="reply-box">
@@ -233,48 +251,43 @@
 
 
         <script>
-            async function postMessage() {
-                const textarea = document.querySelector("textarea");
-                const text = textarea.value.trim();
-                if (!text) return;
+async function postMessage() {
+    const text = document.querySelector("textarea").value.trim();
+    if (!text) return;
 
-                const { error } = await supabaseClient
-                    .from("posts")
-                    .insert({
-                        thread_id: "552b51ab-4933-46fb-abc4-bcf8fa316ce2",
-                        content: text
-                    });
+    const { error } = await supabaseClient
+        .from("posts")
+        .insert({
+            thread_id: "552b51ab-4933-46fb-abc4-bcf8fa316ce2",
+            content: text
+        });
 
-                if (error) {
-                    alert("Post failed");
-                    console.error(error);
-                    return;
-                }
+    if (!error) {
+        location.reload();
+    } else {
+        alert("Post failed");
+    }
+}
 
-                textarea.value = "";
-                await loadPosts(); // ✅ UI updates instantly
-            }
-        </script>
-        <script>
-            setInterval(loadPosts, 3000); // every 3 seconds
+setInterval(loadPosts, 3000); // every 3 seconds
 
 
-            supabaseClient
-                .channel("posts-channel")
-                .on(
-                    "postgres_changes",
-                    {
-                        event: "INSERT",
-                        schema: "public",
-                        table: "posts"
-                    },
-                    payload => {
-                        loadPosts();
-                    }
-                )
-                .subscribe();
+supabaseClient
+  .channel("posts-channel")
+  .on(
+    "postgres_changes",
+    {
+      event: "INSERT",
+      schema: "public",
+      table: "posts"
+    },
+    payload => {
+      loadPosts();
+    }
+  )
+  .subscribe();
 
-        </script>
+
 
 
 
@@ -285,35 +298,28 @@
                 const { data, error } = await supabaseClient
                     .from("posts")
                     .select("*")
-                    .eq("thread_id", "552b51ab-4933-46fb-abc4-bcf8fa316ce2")
                     .order("created_at", { ascending: true });
 
-                if (error) {
-                    console.error(error);
-                    return;
-                }
-
                 const thread = document.querySelector(".thread");
-
-                // 🔥 REMOVE OLD POSTS
-                thread.querySelectorAll(".post").forEach(p => p.remove());
 
                 data.forEach((post, index) => {
                     const div = document.createElement("div");
                     div.className = "post";
                     div.id = `post-${index + 1}`;
 
+                    const parsedContent = post.content.replace(
+                        />>(\d+)/g,
+                        (_, num) => `<span class="ref" onclick="jumpTo(${num})">>>${num}</span>`
+                    );
+
                     div.innerHTML = `
-      <div class="meta">
-        #${index + 1} Anonymous · ${new Date(post.created_at).toLocaleTimeString()}
-      </div>
-      ${post.content}
+      <div class="meta">#${index + 1} Anonymous · ${new Date(post.created_at).toLocaleTimeString()}</div>
+      ${parsedContent}
     `;
 
                     thread.appendChild(div);
                 });
             }
-
 
             function jumpTo(n) {
                 const el = document.getElementById(`post-${n}`);
@@ -347,6 +353,15 @@
                 window.location.href = `index.html?thread=${threadId}`;
             }
         </script>
+
+
+
+
+
+
+
+
+
 
         <script>
             loadPosts();
