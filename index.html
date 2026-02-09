@@ -76,6 +76,17 @@
             border-top: none;
         }
 
+        .thread-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .thread-title {
+            margin: 0;
+        }
+
         .meta {
             font-size: 12px;
             color: #6b7280;
@@ -155,6 +166,38 @@
             color: #000;
         }
 
+        .pagination {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed #1f2937;
+            font-size: 13px;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        select,
+        input[type="text"] {
+            background: #000;
+            border: 1px solid #1f2937;
+            color: #d1d5db;
+            font-family: inherit;
+            font-size: 13px;
+            padding: 6px 8px;
+        }
+
+        .page-info {
+            color: #9ca3af;
+        }
+
         footer {
             text-align: center;
             font-size: 12px;
@@ -183,7 +226,10 @@
         </div>
 
         <div class="thread">
-            <h3>Is AI replacing thinking or exposing it?</h3>
+            <div class="thread-header">
+                <h3 class="thread-title" id="threadTitle">Is AI replacing thinking or exposing it?</h3>
+                <div class="page-info" id="pageInfo">Page 1 of 1</div>
+            </div>
 
             <div class="post" id="p1">
                 <div class="meta">#1 Anonymous · 01:12 AM</div>
@@ -203,6 +249,20 @@
             </div>
 
 
+            <div class="pagination">
+                <div class="pagination-controls">
+                    <button type="button" onclick="goToPreviousPage()">Prev</button>
+                    <button type="button" onclick="goToNextPage()">Next</button>
+                </div>
+                <div class="pagination-controls">
+                    <label for="pageSize">Posts per page</label>
+                    <select id="pageSize" onchange="updatePageSize()">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
         <div class="reply-box">
@@ -211,6 +271,9 @@
             <button onclick="postMessage()">Submit</button>
         </div>
         <div class="reply-box">
+            <strong>Start a new thread</strong><br><br>
+            <input id="newThreadTitle" type="text" placeholder="Name your thread (optional)" />
+            <br>
             <button onclick="createThread()">New Thread</button>
         </div>
 
@@ -254,6 +317,29 @@
             const DEFAULT_THREAD_ID = "552b51ab-4933-46fb-abc4-bcf8fa316ce2";
             const urlParams = new URLSearchParams(window.location.search);
             const activeThreadId = urlParams.get("thread") || DEFAULT_THREAD_ID;
+            let currentPage = 1;
+            let pageSize = 10;
+            let totalPosts = 0;
+
+            async function loadThreadTitle() {
+                if (activeThreadId === DEFAULT_THREAD_ID) return;
+
+                const { data, error } = await supabaseClient
+                    .from("threads")
+                    .select("title")
+                    .eq("id", activeThreadId)
+                    .single();
+
+                if (error) {
+                    console.error(error);
+                    return;
+                }
+
+                const title = data?.title?.trim();
+                if (title) {
+                    document.getElementById("threadTitle").innerText = title;
+                }
+            }
 
             async function postMessage() {
                 const text = document.querySelector("textarea").value.trim();
@@ -299,11 +385,15 @@
                 if (isLoadingPosts) return;
                 isLoadingPosts = true;
 
-                const { data, error } = await supabaseClient
+                const start = (currentPage - 1) * pageSize;
+                const end = start + pageSize - 1;
+
+                const { data, error, count } = await supabaseClient
                     .from("posts")
-                    .select("*")
+                    .select("*", { count: "exact" })
                     .eq("thread_id", activeThreadId)
-                    .order("created_at", { ascending: true });
+                    .order("created_at", { ascending: true })
+                    .range(start, end);
 
                 const thread = document.querySelector(".thread");
 
@@ -314,11 +404,13 @@
                 }
 
                 thread.querySelectorAll(".post").forEach(post => post.remove());
+                totalPosts = count ?? 0;
 
                 data.forEach((post, index) => {
+                    const postNumber = start + index + 1;
                     const div = document.createElement("div");
                     div.className = "post";
-                    div.id = `post-${index + 1}`;
+                    div.id = `post-${postNumber}`;
 
                     const parsedContent = post.content.replace(
                         />>(\d+)/g,
@@ -326,7 +418,7 @@
                     );
 
                     div.innerHTML = `
-      <div class="meta">#${index + 1} Anonymous · ${new Date(post.created_at).toLocaleTimeString()}</div>
+      <div class="meta">#${postNumber} Anonymous · ${new Date(post.created_at).toLocaleTimeString()}</div>
       ${parsedContent}
     `;
 
@@ -337,7 +429,38 @@
                     thread.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "center" });
                 }
 
+                updatePaginationInfo();
                 isLoadingPosts = false;
+            }
+
+            function updatePaginationInfo() {
+                const totalPages = Math.max(1, Math.ceil(totalPosts / pageSize));
+                if (currentPage > totalPages) {
+                    currentPage = totalPages;
+                }
+                document.getElementById("pageInfo").innerText = `Page ${currentPage} of ${totalPages}`;
+            }
+
+            function goToPreviousPage() {
+                if (currentPage > 1) {
+                    currentPage -= 1;
+                    loadPosts();
+                }
+            }
+
+            function goToNextPage() {
+                const totalPages = Math.max(1, Math.ceil(totalPosts / pageSize));
+                if (currentPage < totalPages) {
+                    currentPage += 1;
+                    loadPosts();
+                }
+            }
+
+            function updatePageSize() {
+                const selector = document.getElementById("pageSize");
+                pageSize = parseInt(selector.value, 10);
+                currentPage = 1;
+                loadPosts();
             }
 
             function jumpTo(n) {
@@ -353,9 +476,11 @@
 
         <script>
             async function createThread() {
+                const titleInput = document.getElementById("newThreadTitle");
+                const title = titleInput.value.trim() || "Anonymous Thread";
                 const { data, error } = await supabaseClient
                     .from("threads")
-                    .insert({ title: "Anonymous Thread" })
+                    .insert({ title })
                     .select()
                     .single();
 
@@ -364,6 +489,8 @@
                     alert("Thread creation failed");
                     return;
                 }
+
+                titleInput.value = "";
 
                 // THIS is your auto-generated UUID
                 const threadId = data.id;
@@ -383,6 +510,7 @@
 
 
         <script>
+            loadThreadTitle();
             loadPosts();
             console.log("Supabase ready:", supabaseClient);
         </script>
