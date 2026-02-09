@@ -506,6 +506,12 @@
                 const { data, error } = await supabaseClient
                     .from("threads")
                     .insert({ id: threadId, title });
+                const title = titleInput.value.trim() || "Anonymous Thread";
+                const { data, error } = await supabaseClient
+                    .from("threads")
+                    .insert({ title })
+                    .select()
+                    .single();
 
                 if (error) {
                     console.error(error);
@@ -514,6 +520,13 @@
                 }
 
                 titleInput.value = "";
+
+                // redirect to thread page
+                window.location.href = `index.html?thread=${threadId}`;
+            }
+        </script>
+                // THIS is your auto-generated UUID
+                const threadId = data.id;
 
                 // redirect to thread page
                 window.location.href = `index.html?thread=${threadId}`;
