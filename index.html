@@ -251,56 +251,69 @@
 
 
         <script>
-async function postMessage() {
-    const text = document.querySelector("textarea").value.trim();
-    if (!text) return;
+            const DEFAULT_THREAD_ID = "552b51ab-4933-46fb-abc4-bcf8fa316ce2";
+            const urlParams = new URLSearchParams(window.location.search);
+            const activeThreadId = urlParams.get("thread") || DEFAULT_THREAD_ID;
 
-    const { error } = await supabaseClient
-        .from("posts")
-        .insert({
-            thread_id: "552b51ab-4933-46fb-abc4-bcf8fa316ce2",
-            content: text
-        });
+            async function postMessage() {
+                const text = document.querySelector("textarea").value.trim();
+                if (!text) return;
 
-    if (!error) {
-        location.reload();
-    } else {
-        alert("Post failed");
-    }
-}
+                const { error } = await supabaseClient
+                    .from("posts")
+                    .insert({
+                        thread_id: activeThreadId,
+                        content: text
+                    });
 
-setInterval(loadPosts, 3000); // every 3 seconds
+                if (!error) {
+                    document.querySelector("textarea").value = "";
+                    loadPosts({ scrollToEnd: true });
+                } else {
+                    alert("Post failed");
+                }
+            }
 
-
-supabaseClient
-  .channel("posts-channel")
-  .on(
-    "postgres_changes",
-    {
-      event: "INSERT",
-      schema: "public",
-      table: "posts"
-    },
-    payload => {
-      loadPosts();
-    }
-  )
-  .subscribe();
-
-
-
-
-
+            supabaseClient
+                .channel("posts-channel")
+                .on(
+                    "postgres_changes",
+                    {
+                        event: "INSERT",
+                        schema: "public",
+                        table: "posts"
+                    },
+                    payload => {
+                        if (payload.new?.thread_id === activeThreadId) {
+                            loadPosts();
+                        }
+                    }
+                )
+                .subscribe();
         </script>
 
         <script>
-            async function loadPosts() {
+            let isLoadingPosts = false;
+
+            async function loadPosts({ scrollToEnd = false } = {}) {
+                if (isLoadingPosts) return;
+                isLoadingPosts = true;
+
                 const { data, error } = await supabaseClient
                     .from("posts")
                     .select("*")
+                    .eq("thread_id", activeThreadId)
                     .order("created_at", { ascending: true });
 
                 const thread = document.querySelector(".thread");
+
+                if (error) {
+                    console.error(error);
+                    isLoadingPosts = false;
+                    return;
+                }
+
+                thread.querySelectorAll(".post").forEach(post => post.remove());
 
                 data.forEach((post, index) => {
                     const div = document.createElement("div");
@@ -319,6 +332,12 @@ supabaseClient
 
                     thread.appendChild(div);
                 });
+
+                if (scrollToEnd && data.length) {
+                    thread.lastElementChild?.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+
+                isLoadingPosts = false;
             }
 
             function jumpTo(n) {
