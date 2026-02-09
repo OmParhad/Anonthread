@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>AnonThread · About</title>
+    <link rel="icon" type="image/x-icon" href="Red Black Typography Nine Brand Logo (1).ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            font-family: "Courier New", monospace;
+            background: radial-gradient(circle at top, #020617, #000);
+            color: #d1d5db;
+            margin: 0;
+        }
+
+        header {
+            border-bottom: 1px solid #00ff9c;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            color: #00ff9c;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        header p {
+            color: #6b7280;
+            font-size: 13px;
+            margin-top: 6px;
+        }
+
+        .nav {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            font-size: 13px;
+        }
+
+        .nav a {
+            color: #9ca3af;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            padding-bottom: 2px;
+        }
+
+        .nav a:hover {
+            color: #00ff9c;
+            border-bottom-color: #00ff9c;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 25px auto;
+            padding: 10px;
+        }
+
+        .panel {
+            background: #020617;
+            border: 1px solid #1f2937;
+            padding: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .panel h2 {
+            color: #00ff9c;
+            margin-top: 0;
+        }
+
+        .panel ul {
+            padding-left: 20px;
+        }
+
+        .panel li {
+            margin-bottom: 8px;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            padding: 20px;
+            border-top: 1px solid #1f2937;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>@AnonThread</h1>
+        <p>anonymous signals from the underground</p>
+        <nav class="nav">
+            <a href="index.html">Thread</a>
+            <a href="about.html">About</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="panel">
+            <h2>About AnonThread</h2>
+            <p>
+                AnonThread is a lightweight, open-source experiment in anonymous, ephemeral discussion. It is built to
+                be minimal, fast, and transparent about how it works — no accounts, no profiles, no permanence.
+            </p>
+            <p>
+                We are a small group of designers and builders who value privacy, clarity, and community-led software.
+                We design the interface to feel like a terminal transmission: stark, focused, and free of distraction.
+                The goal is simple: let ideas move, then let them fade.
+            </p>
+            <h3>Mission</h3>
+            <p>
+                Give people a place to share ideas without identity baggage. We believe the best conversations happen
+                when the message matters more than the profile, and when software stays out of the way.
+            </p>
+            <h3>Open-source ethos</h3>
+            <ul>
+                <li>Readable frontend code with zero build tooling required.</li>
+                <li>Supabase-backed persistence that can be swapped or self-hosted.</li>
+                <li>Privacy-forward design: no trackers, no hidden analytics.</li>
+            </ul>
+            <h3>PR rules</h3>
+            <ul>
+                <li>Keep the aesthetic minimal and consistent with the terminal-inspired UI.</li>
+                <li>Prefer small, focused PRs with clear descriptions and reproduction steps for bugs.</li>
+                <li>Document any new UI elements and include screenshots for visual changes.</li>
+                <li>Avoid heavy dependencies or build steps unless absolutely necessary.</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        © 2025 AnonThread · nothing here belongs to anyone
+    </footer>
+</body>
+
+</html>
