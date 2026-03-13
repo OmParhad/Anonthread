@@ -52,7 +52,7 @@ npm install
 npm run dev
 ```
 ## Screen Shot
-![Alternative text for accessibility](path/to/your/screenshot.png)
+![Website Screenshot](Screenshot 2026-03-13 220745.png)
 
 
 ## 🌐 Live Demo
