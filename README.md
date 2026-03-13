@@ -51,9 +51,6 @@ npm install
 # Run development server
 npm run dev
 ```
-## Screen Shot
-![Website Screenshot](Screenshot 2026-03-13 220745.png)
-
 
 ## 🌐 Live Demo
 
