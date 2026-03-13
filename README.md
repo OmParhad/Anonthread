@@ -51,6 +51,9 @@ npm install
 # Run development server
 npm run dev
 ```
+## Screen Shot
+![Alternative text for accessibility](path/to/your/screenshot.png)
+
 
 ## 🌐 Live Demo
 
